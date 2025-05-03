@@ -69,7 +69,7 @@ model Proposal {
   freelancerId String
   message      String
   bidAmount    Float?
-  deliveryTime Int // in days
+  deliveryTime Int 
   status       ProposalStatus @default(PENDING)
   createdAt    DateTime       @default(now())
 
