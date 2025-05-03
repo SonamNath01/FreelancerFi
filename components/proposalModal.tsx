@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   ModalBody,
@@ -8,8 +8,10 @@ import {
   ModalTrigger,
 } from "./ui/animated-modal";
 import Aurora from "./ui/Aurora/Aurora";
+import axios from "axios";
+import { freemem } from "os";
 
-export function ProposalModal() {
+export function ProposalModal({jobId}) {
   const [proposal, setProposal] = useState({
     message: "",
     bidAmount: "",
@@ -17,6 +19,18 @@ export function ProposalModal() {
   });
   
   const [submitting, setSubmitting] = useState(false);
+  const [freelancerId, setFreelancerId] = useState("");
+
+  useEffect(() => {
+    const freelancerId = localStorage.getItem("userId");
+    setFreelancerId(freelancerId);
+    console.log("Freelancer ID from localStorage:", freelancerId);
+    if (!freelancerId) {
+      console.error("Freelancer ID not found in localStorage. Please log in.");
+    } else {
+      console.log("Freelancer ID is available:", freelancerId);
+    }
+  },[])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,13 +47,18 @@ export function ProposalModal() {
     const formattedProposal = {
       ...proposal,
       bidAmount: parseFloat(proposal.bidAmount),
-      deliveryTime: parseInt(proposal.deliveryTime)
+      deliveryTime: parseInt(proposal.deliveryTime),
+      freelancerId: freelancerId,
     };
     
     // Here you would connect to your API to send the proposal
     console.log("Submitting proposal:", formattedProposal);
     
     // Simulate API call
+    console.log(jobId)
+    const {data} = await axios.post(`/api/freelancer/submit-proposal/${jobId}`, formattedProposal);
+    console.log("Response from API:", data);
+
     setTimeout(() => {
       setSubmitting(false);
       // You would handle the success/redirect here
