@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  role         UserRole
+  passwordHash String
+  rating       Float    @default(0)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  clientJobs          Job[]          @relation("ClientJobs")
+  freelancerJobs      Job[]          @relation("FreelancerJobs")
+  proposals           Proposal[]
+  notifications       Notification[]
+  escrowsAsClient     Escrow[]       @relation("ClientEscrows")
+  escrowsAsFreelancer Escrow[]       @relation("FreelancerEscrows")
+  deliveries          Delivery[]
+  disputesRaised      Dispute[]      @relation("RaisedDisputes")
+  disputesAgainst     Dispute[]      @relation("AgainstDisputes")
+  daoProposals        DAOProposal[]  @relation("CreatedDAOProposals")
+}
+
+enum UserRole {
+  CLIENT
+  FREELANCER
+}
+
+model Job {
+  id           String   @id @default(uuid())
+  title        String
+  longDescHash String
+  budget       Float
+  deadline     DateTime
+  category     String
+  company      String?
+  location     String?
+  isOpen       Boolean  @default(true)
+
+  clientId     String
+  freelancerId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  client     User       @relation("ClientJobs", fields: [clientId], references: [id])
+  freelancer User?      @relation("FreelancerJobs", fields: [freelancerId], references: [id])
+  proposals  Proposal[]
+  escrow     Escrow?
+  delivery   Delivery?
+  dispute    Dispute?
+
+  @@index([clientId])
+  @@index([freelancerId])
+}
+
+model Proposal {
+  id           String         @id @default(uuid())
+  jobId        String
+  freelancerId String
+  message      String
+  bidAmount    Float?
+  deliveryTime Int // in days
+  status       ProposalStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+
+  // Relations
+  job        Job  @relation(fields: [jobId], references: [id])
+  freelancer User @relation(fields: [freelancerId], references: [id])
+
+  @@index([jobId])
+  @@index([freelancerId])
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  content   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Escrow {
+  id              String       @id @default(uuid())
+  jobId           String       @unique
+  clientId        String
+  freelancerId    String
+  amount          Float
+  contractAddress String
+  status          EscrowStatus @default(LOCKED)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  releasedAt      DateTime?
+  releaseTxHash   String?
+
+  // Relations
+  job        Job  @relation(fields: [jobId], references: [id])
+  client     User @relation("ClientEscrows", fields: [clientId], references: [id])
+  freelancer User @relation("FreelancerEscrows", fields: [freelancerId], references: [id])
+
+  @@index([clientId])
+  @@index([freelancerId])
+}
+
+enum EscrowStatus {
+  LOCKED
+  RELEASED
+  DISPUTED
+}
+
+model Delivery {
+  id           String   @id @default(uuid())
+  jobId        String   @unique
+  freelancerId String
+  fileHash     String
+  message      String?
+  submittedAt  DateTime @default(now())
+
+  // Relations
+  job        Job  @relation(fields: [jobId], references: [id])
+  freelancer User @relation(fields: [freelancerId], references: [id])
+}
+
+model Dispute {
+  id         String        @id @default(uuid())
+  jobId      String        @unique
+  raisedById String
+  againstId  String
+  reason     String
+  status     DisputeStatus @default(OPEN)
+  createdAt  DateTime      @default(now())
+  resolvedAt DateTime?
+
+  // Relations
+  job      Job  @relation(fields: [jobId], references: [id])
+  raisedBy User @relation("RaisedDisputes", fields: [raisedById], references: [id])
+  against  User @relation("AgainstDisputes", fields: [againstId], references: [id])
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+  REJECTED
+}
+
+model DAOProposal {
+  id           String    @id @default(uuid())
+  title        String
+  description  String
+  createdById  String
+  votesFor     Int       @default(0)
+  votesAgainst Int       @default(0)
+  open         Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  closedAt     DateTime?
+
+  createdBy User @relation("CreatedDAOProposals", fields: [createdById], references: [id])
+}
