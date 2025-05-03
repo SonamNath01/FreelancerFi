@@ -7,6 +7,7 @@ import { IntroSection } from "@/components/intro-section"
 import { Footer } from "@/components/footer"
 import { Navigation } from "@/components/navigation"
 import { CTASection } from "@/components/action-section"
+import ProposalNotifications from "@/components/proposalsNotifications"
 
 export default function LandingPage() {
   return (
@@ -16,6 +17,7 @@ export default function LandingPage() {
         <HeroSection />
         <IntroSection />
         <CTASection/>
+        {/* <ProposalNotifications/> */}
 
         {/* Call to Action Section */}
         {/* <section className="container mx-auto py-20 px-4">
