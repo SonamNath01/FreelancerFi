@@ -129,9 +129,17 @@ export function JobListings() {
         if (data.success && data.data) {
           const fetchedJobs = data.data.map((job: any) => {
             // Process fetched job data to match our structure
-            let richDescription = {};
+            interface RichDescription {
+              description?: string;
+              type?: string;
+              skills?: string[];
+              experienceLevel?: string;
+              projectLength?: string;
+            }
+            
+            let richDescription: RichDescription = {};
             try {
-              richDescription = job.richDescription || {};
+              richDescription = (job.richDescription as RichDescription) || {};
             } catch (e) {
               console.error("Error parsing rich description:", e);
             }

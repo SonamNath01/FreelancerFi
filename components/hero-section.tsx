@@ -10,13 +10,18 @@ import ShinyText from "./ui/ShinyText/ShinyText";
 import Particles from "./ui/Particles/Particles";
 
 function useScrollTo() {
-  const scrollTo = (id) => {
+  interface ScrollToOptions {
+    behavior: ScrollBehavior;
+    block: ScrollLogicalPosition;
+  }
+
+  const scrollTo = (id: string): void => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({
         behavior: "smooth",
         block: "start",
-      });
+      } as ScrollToOptions);
     }
   };
   return scrollTo;
@@ -30,7 +35,7 @@ export function HeroSection() {
   const isInView = useInView(ref, { once: false, amount: 0.2 });
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: { clientX: any; clientY: any; }) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
 

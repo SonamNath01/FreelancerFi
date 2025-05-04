@@ -1,7 +1,6 @@
 // app/api/file/uploadFileToPinata/route.ts (using Hono)
 import { Hono } from 'hono';
 import { uploadFileToPinata } from '@/lib/pinata';
-import { File } from 'undici'; // For Node.js environment
 
 const app = new Hono();
 

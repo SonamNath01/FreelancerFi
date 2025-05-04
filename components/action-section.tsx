@@ -19,7 +19,24 @@ export function CTASection() {
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
   
   // Text animation variants
-  const headingVariants = {
+  interface HeadingVariants {
+    [key: string]: any;
+    hidden: {
+      opacity: number;
+      y: number;
+    };
+    visible: (i: number) => {
+      opacity: number;
+      y: number;
+      transition: {
+        delay: number;
+        duration: number;
+        ease: [number, number, number, number];
+      };
+    };
+  }
+
+  const headingVariants: HeadingVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: (i) => ({
       opacity: 1,
@@ -27,7 +44,7 @@ export function CTASection() {
       transition: {
         delay: 0.05 * i,
         duration: 0.8,
-        ease: [0.215, 0.61, 0.355, 1] 
+        ease: [0.215, 0.61, 0.355, 1]
       }
     })
   };
