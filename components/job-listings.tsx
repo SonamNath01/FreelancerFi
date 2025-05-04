@@ -45,6 +45,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { useRouter } from "next/navigation";
 import { ProposalModal } from "./proposalModal";
+import { ethers } from "ethers";
+import { FileUpload } from "./ui/file-upload";
 
 export function JobListings() {
   const router = useRouter();
@@ -101,6 +103,17 @@ export function JobListings() {
     },
   ]);
   const [isVisible, setIsVisible] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [cid, setCid] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
+  const ESCROW_ADDRESS = "0x57662B0D2c958514acb0960c7C1e4411E9941993";
+
+  const ESCROW_ABI = [
+    "function submitWork(uint256 _jobId, string calldata _cid) external",
+  ];
 
   // Fetch jobs from API
   useEffect(() => {
@@ -382,6 +395,104 @@ export function JobListings() {
       return `$${(budget / 1000).toFixed(1)}k`;
     }
     return `$${budget}`;
+  };
+
+  const handleFileUpload = async (files: File[]) => {
+    // Handle single file or multiple files
+    if (files.length === 0) {
+      console.error("No file selected");
+      return;
+    }
+  
+    const file = files[0]; // Get the first file if multiple are selected
+    
+    try {
+      // Create a proper FormData object
+      const formData = new FormData();
+      formData.append('file', file);
+  
+      // Log the file being uploaded for debugging
+      console.log("Uploading file:", file.name, file.type, file.size);
+  
+      const response = await fetch('/api/file/uploadFileToPinata', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to upload file to Pinata: ${response.status} ${errorText}`);
+      }
+  
+      const data = await response.json();
+      console.log('Upload successful:', data);
+  
+      if (data.cid) {
+        setCid(data.cid);
+        setFiles([file]); // Store the uploaded file
+      } else {
+        throw new Error('No CID returned from upload');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+  
+
+  const handleSubmitWork = async () => {
+    if (!cid) {
+      alert("Please upload a file first!");
+      return;
+    }
+  
+    if (!selectedJobId) {
+      alert("No job selected!");
+      return;
+    }
+  
+    setIsSubmitting(true);
+  
+    try {
+      // Check if window.ethereum exists
+      if (!window.ethereum) {
+        throw new Error("Ethereum provider not found. Please install MetaMask.");
+      }
+  
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(ESCROW_ADDRESS, ESCROW_ABI, signer);
+  
+      // Parse job ID to number if it's a string
+      const jobIdNumber = parseInt(selectedJobId);
+  
+      if (isNaN(jobIdNumber)) {
+        throw new Error("Invalid job ID");
+      }
+  
+      // Call submitWork from contract
+      const tx = await contract.submitWork(jobIdNumber, cid);
+      await tx.wait(); // Wait for transaction to be mined
+  
+      alert("Work submitted successfully!");
+  
+      // Reset state after successful submission
+      setShowUpload(false);
+      setCid(null);
+      setFiles([]);
+      setSelectedJobId(null);
+    } catch (error) {
+      console.error("Error submitting work:", error);
+      alert(`Error submitting work: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+
+  const handleShowUpload = (jobId: string) => {
+    setSelectedJobId(jobId);
+    setShowUpload(true);
   };
 
   return (
@@ -771,18 +882,34 @@ export function JobListings() {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="pt-4">
+                {!showUpload && (
                   <Button
-                    asChild
-                    className="w-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-500/50 text-white"
+                    onClick={() => setShowUpload(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded"
                   >
-                    {/* <Link href={`/jobs/${job.id}`}>
-                      View Job
-                      <ArrowRight className="ml-1 h-4 w-4" />
-                    </Link> */}
-                    {isVisible ? <ProposalModal jobId={job.id} /> : ""}
+                    Submit Work
                   </Button>
-                </CardFooter>
+                )}
+
+                {showUpload && (
+                  <div className="w-full max-w-4xl mx-auto min-h-96 border border-dashed bg-white dark:bg-black border-neutral-200 dark:border-neutral-800 rounded-lg mt-4">
+                    <FileUpload onChange={(files: File[]) => handleFileUpload(files)} />
+                    {files.length > 0 && cid && (
+                      <div className="mt-4">
+                        <p className="text-lg">
+                          File uploaded successfully! CID: {cid}
+                        </p>
+                        <Button
+                          onClick={handleSubmitWork}
+                          className="w-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-500/50 text-white"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? "Submitting..." : "Submit Work"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </Card>
             ))}
           </div>

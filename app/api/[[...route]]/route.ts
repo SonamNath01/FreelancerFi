@@ -4,6 +4,7 @@ import user from "./user";
 import job from "./job";
 import freelancer from "./freelancer";
 import proposal from "./proposal";
+import  file  from "./file";
 
 
 // export const runtime = 'edge'
@@ -16,6 +17,7 @@ const routes = app
     .route("/job", job)
     .route("/freelancer", freelancer)
     .route("/proposal", proposal)
+    .route("/file", file)
 
 export const GET = handle(app)
 export const POST = handle(app)

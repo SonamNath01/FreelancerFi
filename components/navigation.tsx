@@ -89,13 +89,13 @@ export function Navigation() {
                 variant="outline"
                 className="border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900"
               >
-                <Link href="/login">Log In</Link>
+                <Link href="/sign-up">Log In</Link>
               </Button>
               <Button
                 asChild
                 className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/50 text-white hover:from-purple-500/30 hover:to-blue-500/30"
               >
-                <Link href="/register">Sign Up</Link>
+                <Link href="/sign-up">Sign Up</Link>
               </Button>
             </>
           )}

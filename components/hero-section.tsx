@@ -147,20 +147,10 @@ export function HeroSection() {
               size="lg"
               className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-none"
             >
-              <Link href="/register">
+              <Link href="/jobs">
                 <span className="relative z-10">Start Freelancing</span>
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => scrollTo("intro")}
-              className="group border-zinc-700 text-white hover:text-white hover:border-zinc-500"
-            >
-              <span>Learn More</span>
-              <ChevronRight className="ml-2 h-4 w-4 transform rotate-90 animate-bounce" />
             </Button>
           </motion.div>
         </div>

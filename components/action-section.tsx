@@ -199,21 +199,27 @@ export function CTASection() {
           
           <Button
             asChild
-            variant="outline"
             size="lg"
-            className="group border-zinc-800 text-white hover:text-white hover:bg-zinc-900"
+            className="group relative overflow-hidden"
+            onMouseEnter={() => setButtonHovered(true)}
+            onMouseLeave={() => setButtonHovered(false)}
+            style={{
+              background: "linear-gradient(90deg, rgba(124, 58, 237, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
+              borderImage: "linear-gradient(90deg, rgba(124, 58, 237, 0.5) 0%, rgba(59, 130, 246, 0.5) 100%)",
+              borderImageSlice: 1,
+              borderWidth: "1px",
+              borderStyle: "solid",
+            }}
           >
-            <Link href="/jobs" className="flex items-center">
-              Browse Jobs
-              <motion.span 
-                animate={buttonHovered ? 
-                  { x: [0, 5, 0] } : 
-                  { x: 0 }
-                }
-                transition={{ duration: 1, repeat: Infinity }}
-              >
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </motion.span>
+            <Link href="/dashboard" className="flex items-center">
+              <span className="relative z-10">Browse Jobs</span>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20"
+                initial={{ opacity: 0, scale: 1 }}
+                animate={buttonHovered ? { opacity: 1, scale: 1.05 } : { opacity: 0, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </Button>
         </motion.div>
