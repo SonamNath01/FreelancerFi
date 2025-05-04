@@ -38,6 +38,24 @@ export function HeroSection() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  if (!isClient) return null; // Prevent SSR issues
+
+  const xOffset = (mousePosition.x - window.innerWidth / 2) / 50;
+  const yOffset = (mousePosition.y - window.innerHeight / 2) / 50;
+
   return (
     <section
       id="hero"
@@ -57,9 +75,7 @@ export function HeroSection() {
       <motion.div
         className="absolute inset-0 z-10 opacity-20 bg-gradient-to-br from-purple-500/30 via-transparent to-blue-500/30"
         style={{
-          transform: `translate(${
-            (mousePosition.x - window.innerWidth / 2) / 50
-          }px, ${(mousePosition.y - window.innerHeight / 2) / 50}px)`,
+          transform: `translate(${xOffset}px, ${yOffset}px)`,
         }}
         animate={{
           backgroundPosition: ["0% 0%", "100% 100%"],
